@@ -7,6 +7,7 @@
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
 \newcommand{\follows}{$\rightarrow$ }
 \newcommand*\xor{\mathbin{\oplus}}
+\newcommand{\tab}[1]{\hspace{.2\textwidth}\rlap{#1}}
 
 \begin{document}
 	
@@ -90,10 +91,28 @@
 	- Slave nimmt seine (die vorderste) Nachricht und hängt Antwort hinten an \\
 	- Slave durch Platz definiert \follows keine Adresse notwendig
 	
+	\myparagraph{FTDMA - Flexible Time Division Multiple Access}
+	- Steuerung basiert auf "Slot-Zählern" in Netzknoten \\
+	- Zu Beginn der Übertragung Synchronisation \\
+	- Zählerstand = Identifier \\
+	- Falls Zählerstand = ID einer Nachricht \follows Nachricht erhält Buszugriff \\
+	- Senden \follows Stop der Zähler \\
+	
+	\myparagraph{Systematisierung der Zugriffsverfahren}
+	\begin{tabbing}
+	- \= Deterministisch \\
+	\> - Zentral gesteuert (Master-Slave) \\
+	\> - Dezentral gesteuert (Token, TDMA Verfahren) \\
+	- Zufällig \\
+	\> - Nicht Kollisionsfrei \\
+	\> - Kollisionsfrei (CSMA/CD, CA, CR)
+	\end{tabbing}
+	
+	
 	\subsection{Telegramme}
 	= binär codierte Nachrichteneinheiten auf Busleitung \\
 	- Form liefert Aussage über Leistungsfähigkeit \\
-	- Effizienz = Datenbits / Gesamtzahl Bits
+	- Effizienz = Datenbits / Gesamtzahl Bits \\
 	- alle Telegramme haben: Start-/Enderahmen, Prüfzeichen (Parity, CRC) und Steuerzeichen
 	
 	\subsection{Protokoll}
@@ -101,13 +120,30 @@
 	Syntax = Zeichen- oder Wortfolgen für Kommunikation \\
 	Semantik = richtige Verwendung syntaktisch korrekter Konstrukte \\
 	Latenzzeit = Dauer von Versenden bis Empfang einer Nachricht \\
-	Übertragungsrate (Brutto/Netto)
+	Übertragungsrate (Brutto/Netto) \\
+	\textbf{teilnehmerorientiert} Nachrichten enthalten eine eindeutige Identifikation der Teilnehmer \\
+	\textbf{nachrichtenorientiert} Nachrichten sind durch eindeutige Kennung identifiziert - Teilnehmer entscheiden über Verwendung
 	
 	\subsection{Kommunikationsformen}
 	Punkt-zu-Punkt = Ein Sender, ein Empfänger \\
 	Anycast = Ein Sender, ein (beliebiger Empfänger) \\
 	Broadcast = Ein Sender, potenziell viele Empfänger \\
 	Multicast = Ein Sender, viele Empfänger
+	
+	\myparagraph{Client - Server}
+	- Anforderungen (Request)
+	- Anzeige (Indication)
+	- Antwort (Response)
+	- Bestätigung (Confirmation)
+	
+	\myparagraph{Producer - Consumer}
+	- meist Verwendung einer Queue
+	- Broadcast
+	- Multicast
+	
+	\myparagraph{Publisher - Subscriber}
+	- Multicast an Subscriber
+	- Subscriber bekommt Informationen nur, wenn er "abonniert" hat
 	
 	\subsection{Bitcodierung}
 	\myparagraph{Manchester}
@@ -124,5 +160,74 @@
 	$$ p_{k} = d_{k} \xor p_{k-1} $$
 	NRZ(I)-S - Bitwechsel bei "0", bei "1" kein Bitwechsel (Verwendung bei USB)
 	$$ p_{k} = \neg d_{k} \xor p_{k-1} $$
+	
+	\subsection{Fehlererkennung/Korrektur - Datensicherung}
+	- Werden eingesetzt, um das korrekte Empfangen und Senden einer Nachricht zu prüfen
+
+	\myparagraph{Paritätsprüfung}
+	- Bits werden addiert \\
+	- Quersumme ist entweder gerade oder ungerade \\
+	- Wird durch Bit am Ende der Nachricht signalisiert \\
+	\follows Fehlererkennung bei 1-Bit Fehlern
+	
+	\myparagraph{CRC - Cyclic Redundancy Check}
+	- erzeugen eines Generatorpolynoms (z.B. 110101 = $G = x^5 + x^4 + x^2 + x^0$) \\
+	- Datenrahmen erweitern um $n = r - 1$ | $r =$ Länge $G$ \\
+	- Division des Datenrahmens durch $G$ \\
+	- Senden Datenrahmen plus Rest \\
+	- Bei Empfangen: Division durch Generatorpolynom \\
+	- Richtig empfangen, wenn hier Rest = 0
+	
+	\myparagraph{Hammingcode}
+	
+	\subsection{Fehlerkontrolle}
+	\myparagraph{passive}
+	- bei korrekter Nachricht Quitting an Sender \\
+	- Abwarten einer bestimmten Zeit, bis neue Nachricht \\
+	- bei keiner Quittung \follows nochmaliges Senden \\
+	\follows teilnehmerorientierte Protokolle
+	
+	\myparagraph{aktive}
+	- bei Fehler sendet Empfänger Fehlersignal \\
+	\follows nachrichtenorientierte Protokolle
+	
+	\subsection{Bedeutung der einzelnen Schichten nach OSI}
+	\myparagraph{Application Layer}
+	- Datenübertragung zwischen "benachbarten" Teilnehmern \\
+	- Steuerung Datenfluss \\
+	- Realisierung Zugriffsverfahren \\
+	- sichert Teilstrecke durch Fehlererkennung und -korrektur
+	
+	\myparagraph{Data-Link Layer}
+	- allgemein verwendbare Grundfunktionen (z.B. Auf- und Abbau von Verbindungen) \\
+	- organisatorische Funktionen notwendig \follows Management, bzw. Netzwerkmanagement
+	
+	\section{Automotive}
+	\subsection{Anforderungen}
+	- Einteilung nach SAE-Klassen \\ \\
+	\begin{tabular}{l | l | l}
+		SAE-Klasse & Merkmale & Typisches System \\ \hline
+		A & \parbox[t]{7cm}{Vernetzung von Aktoren und Sensoren \\
+			Geringe Datenrate (10kbit/s) \\
+			Geringe Ausprägung Fehlererkennung und -korrektur} & LIN-Bus \\ \hline
+		B & \parbox[t]{7cm}{Vernetzung Steuergeräte \\
+			Mittlere Datenraten (125kbit/s) \\
+			Komplexe Mechanismen Fehlererkennung und -korrektur} & CAN-Bus \\ \hline
+		C & \parbox[t]{7cm}{Vernetzung Steuergeräte mit "einfachen" Echtzeitanforderungen \\
+			Hohe Datenraten} & CAN-Bus \\ \hline
+		D & \parbox[t]{7cm}{Multimedia-Anwendungen \\
+			Hohe Datenraten} & MOST-Bus\\
+	\end{tabular}
+	
+	\section{CAN - Controller Area Network}
+	\subsection{Überblick}
+	Codierung: NRZ-I \\
+	Protokoll: nachrichtenorientiert \\
+	Buszugriff: Multi-Master mit Broad- und Multicast, CSMA/CR
+	
+	\subsection{Arbitrierung}
+	- 11 Bit Identifier \\
+	- Low-Pegel dominant \\
+	\follows Nachricht mit stärkerem Null-Pegel setzt sich durch
 	
 \end{document}
