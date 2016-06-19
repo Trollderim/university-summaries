@@ -1,0 +1,128 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{acronym}
+\usepackage[utf8]{inputenc}
+
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
+\newcommand{\follows}{$\rightarrow$ }
+\newcommand*\xor{\mathbin{\oplus}}
+
+\begin{document}
+	
+	\begin{acronym}
+		\acro{FDMA}{Frequency Domayn Multiple Access}
+		\acro{RTT}{Roundtriptime}
+	\end{acronym}
+	
+	\title{Bussysteme - Eine Zusammenfassung}
+	\author{Phillipp Mevenkamp}
+	
+	\maketitle
+	
+	\section{Grundlagen}
+	\subsection{Hierarchie}
+	- Ethercat / Industrial Ethernet \\	
+	- Profibus \\	
+	- CAN / LIN \\
+	- AS/I \\
+	- RS 232 / EIA 485
+	
+	\subsection{Aufteilung Medium}
+	- Datenrate wird in kleiner Einheiten aufgeteilt \\
+	- Jede Station enthält dabei eine Einheit zur exklusiven Benutzung
+	
+	\myparagraph{Wahlfreier Zugriff (Random Access)}
+	- Datenrate nicht unterteilt \\
+	- Kollisionen können vorkommen \follows Behandlung notwendig
+	
+	\myparagraph{Abwechselnd}
+	- Zugriffe werden koordiniert \follows Kollisionen werden vermieden
+	
+	\myparagraph{TDMA - Time Division Multiple Access}
+	- Zugriff auf Medium in Runden \\
+	- Jede Station hat einen festen Zeitschlitz \\
+	- nicht verwendete gehen dabei verloren
+	
+	\myparagraph{\ac{FDMA}}
+	- Spektrum des Mediums wird auf Frequenzen aufgeteilt \\
+	- Jede Station hat fixe Frequenz \\
+	- Station sendet nicht \follows Bereich nicht verwendet
+	
+	\subsection{Buszugriffsverfahren}
+	
+	\myparagraph{Master/Slave (AS-I, Interbus, Profibus)}
+	- Master ruft Slaves in Reihenfolge auf und fordert Nachricht an \\
+	- Abarbeitung in Zyklen \\
+	- Jeder Slave hat eigene Adresse \\
+	- Slaves stellen Linie dar \\
+	- Knotenpunkte galvanisch entkoppelt
+	
+	\myparagraph{Token Passing}
+	- verwendet bei mehreren Mastern \\
+	- Zugriffsberechtigung über strenges Token-Passing \\
+	- Token wird von Master zu Master gereicht
+	
+	\myparagraph{CSMA/CD Carrier Sense Multiple Access / Collision Detection}
+	- Jeder Teilnehmer gleichberechtigt \\
+	- Teilnehmer senden adressierte Telegramme an andere Teilnehmer \\
+	- Kollision \follows beide ziehen sich zurück und versuchen Zugriff nach Zufallszeit nochmal \\
+	- nicht echtzeitfähig
+	- bei wenig Auslastung \follows gut \\
+	- bei viel Auslastung \follows viele Kollisionen \\
+	- Sendevorgang während \ac{RTT} noch bestehen \follows \ac{RTT} = $$2 * s_{max} = v * t_{frame} = c * VKF * S_{Frame} * (1 / v_{bit})$$
+	
+	\myparagraph{CSMA/CA Carrier Sense Multiple Access / Collision Avoidance}
+	- Jeder Knoten gleichberechtigt \\
+	- Senden an alle \\
+	- Botschaft mit Identifier versehen \follows Jeder Empfänger behandelt Nachricht je nach ID \\
+	- ID legt Priorität für Nachricht bei Kollision fest \follows bedingt echtzeitfähig \\
+	- Beispiel: WLAN
+	\myparagraph{CSMA/CA Carrier Sense Multiple Access / Collision Resolution}
+	- Kommt bei Feldbussen wie CAN zum Einsatz \\
+	- Ähnlich CSMA/CA \\
+	- Kollisionsvermeidung durch Bitarbitrierung \\
+	- In Arbitrierungsphase setzt sich Teilnehmer mit höchster Nachrichtenpriorität durch \follows Senden annähernd verzögerungsfrei
+	
+	\myparagraph{Schieberegister}
+	- Einzelnachrichten für jeden Slave in topologischer Reihenfolge\\
+	- Telegramm Abbild der Slave-Anordnung \\
+	- Slave nimmt seine (die vorderste) Nachricht und hängt Antwort hinten an \\
+	- Slave durch Platz definiert \follows keine Adresse notwendig
+	
+	\subsection{Telegramme}
+	= binär codierte Nachrichteneinheiten auf Busleitung \\
+	- Form liefert Aussage über Leistungsfähigkeit \\
+	- Effizienz = Datenbits / Gesamtzahl Bits
+	- alle Telegramme haben: Start-/Enderahmen, Prüfzeichen (Parity, CRC) und Steuerzeichen
+	
+	\subsection{Protokoll}
+	= vollständiges und eindeutiges Regelwerk für die Kommunikation \\
+	Syntax = Zeichen- oder Wortfolgen für Kommunikation \\
+	Semantik = richtige Verwendung syntaktisch korrekter Konstrukte \\
+	Latenzzeit = Dauer von Versenden bis Empfang einer Nachricht \\
+	Übertragungsrate (Brutto/Netto)
+	
+	\subsection{Kommunikationsformen}
+	Punkt-zu-Punkt = Ein Sender, ein Empfänger \\
+	Anycast = Ein Sender, ein (beliebiger Empfänger) \\
+	Broadcast = Ein Sender, potenziell viele Empfänger \\
+	Multicast = Ein Sender, viele Empfänger
+	
+	\subsection{Bitcodierung}
+	\myparagraph{Manchester}
+	- Triggern auf Flanken
+	
+	\myparagraph{NRZ - Non-Return-to-Zero}
+	- Gleichstrom \follows Maßnahme zur Synchronisation notwendig \\
+	\follows Bitstuffing = nach bestimmter Anzahl gleicher Bits, wird Stuffbit eingefügt (beispielsweise 5).
+	
+	Sonderformen:
+	NRZ-L - normale NRZ Codierung \\
+	NRZ-I - Invertiere bei Bit den Ursprungspegel \\
+	NRZ(I)-M - Bitwechsel bei "1", bei "0" kein Bitwechsel
+	$$ p_{k} = d_{k} \xor p_{k-1} $$
+	NRZ(I)-S - Bitwechsel bei "0", bei "1" kein Bitwechsel (Verwendung bei USB)
+	$$ p_{k} = \neg d_{k} \xor p_{k-1} $$
+	
+\end{document}
